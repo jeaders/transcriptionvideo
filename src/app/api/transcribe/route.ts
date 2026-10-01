@@ -21,15 +21,20 @@ export async function POST(req: Request) {
   const platform = detectPlatform(url);
   const vid = platform === "youtube" ? youtubeId(url) : null;
   const id = newId();
-  await db.insert(transcripts).values({
-    id,
-    url,
-    platform,
-    title: "Analisi del video in corso…",
-    thumbnail: vid ? `https://i.ytimg.com/vi/${vid}/hqdefault.jpg` : null,
-    status: "processing",
-    meta: vid ? { videoId: vid } : {},
-  });
-  after(() => processTranscript(id, { language: body.language, target: body.target }));
-  return NextResponse.json({ id });
+  try {
+    await db.insert(transcripts).values({
+      id,
+      url,
+      platform,
+      title: "Analisi del video in corso…",
+      thumbnail: vid ? `https://i.ytimg.com/vi/${vid}/hqdefault.jpg` : null,
+      status: "processing",
+      meta: vid ? { videoId: vid } : {},
+    });
+    after(() => processTranscript(id, { language: body.language, target: body.target }));
+    return NextResponse.json({ id });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Errore durante l'avvio della trascrizione";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
