@@ -11,14 +11,23 @@ export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const [t] = await db.select({ title: transcripts.title }).from(transcripts).where(eq(transcripts.id, id));
-  return { title: t ? `${t.title} — Trascrizione | Trascrivo` : "Trascrizione | Trascrivo" };
+  try {
+    const { id } = await params;
+    const [t] = await db.select({ title: transcripts.title }).from(transcripts).where(eq(transcripts.id, id));
+    return { title: t ? `${t.title} — Trascrizione | Trascrivo` : "Trascrizione | Trascrivo" };
+  } catch {
+    return { title: "Trascrizione | Trascrivo" };
+  }
 }
 
 export default async function TranscriptPage({ params }: Props) {
-  const { id } = await params;
-  const [t] = await db.select().from(transcripts).where(eq(transcripts.id, id));
-  if (!t) notFound();
+  let t: { id: string; [key: string]: unknown } | undefined;
+  try {
+    const { id } = await params;
+    [t] = await db.select().from(transcripts).where(eq(transcripts.id, id));
+  } catch {}
+  if (!t) {
+    notFound();
+  }
   return <Workspace key={t.id} initial={publicTranscript(t)} />;
 }

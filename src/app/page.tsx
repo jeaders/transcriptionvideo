@@ -30,19 +30,22 @@ const FAQ = [
 ];
 
 export default async function HomePage() {
-  const recent = await db
-    .select({
-      id: transcripts.id,
-      title: transcripts.title,
-      platform: transcripts.platform,
-      thumbnail: transcripts.thumbnail,
-      duration: transcripts.duration,
-      createdAt: transcripts.createdAt,
-    })
-    .from(transcripts)
-    .where(eq(transcripts.status, "done"))
-    .orderBy(desc(transcripts.createdAt))
-    .limit(6);
+  let recent: { id: string; title: string; platform: string; thumbnail: string | null; duration: number | null; createdAt: Date }[] = [];
+  try {
+    recent = await db
+      .select({
+        id: transcripts.id,
+        title: transcripts.title,
+        platform: transcripts.platform,
+        thumbnail: transcripts.thumbnail,
+        duration: transcripts.duration,
+        createdAt: transcripts.createdAt,
+      })
+      .from(transcripts)
+      .where(eq(transcripts.status, "done"))
+      .orderBy(desc(transcripts.createdAt))
+      .limit(6);
+  } catch {}
 
   return (
     <div className="overflow-hidden">
