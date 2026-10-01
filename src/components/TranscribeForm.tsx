@@ -53,7 +53,12 @@ export default function TranscribeForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url, language: prefs.language, target: prefs.target }),
     });
-    const d = (await r.json()) as { id?: string; error?: string };
+    let d: { id?: string; error?: string } = {};
+    try {
+      d = (await r.json()) as { id?: string; error?: string };
+    } catch {
+      if (!r.ok) throw new Error("Risposta non valida dal server");
+    }
     if (!r.ok || !d.id) throw new Error(d.error ?? "Errore");
     autoStart.add(d.id);
     router.push(`/t/${d.id}`);
@@ -67,7 +72,12 @@ export default function TranscribeForm() {
       fd.append("language", prefs.language);
       fd.append("target", prefs.target);
       const r = await fetch("/api/upload", { method: "POST", body: fd });
-      const d = (await r.json()) as { id?: string; error?: string };
+      let d: { id?: string; error?: string } = {};
+      try {
+        d = (await r.json()) as { id?: string; error?: string };
+      } catch {
+        if (!r.ok) throw new Error("Risposta non valida dal server");
+      }
       if (r.ok && d.id) return router.push(`/t/${d.id}`);
     }
     const r = await fetch("/api/transcripts", {
@@ -75,7 +85,12 @@ export default function TranscribeForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: file.name }),
     });
-    const d = (await r.json()) as { id?: string; error?: string };
+    let d: { id?: string; error?: string } = {};
+    try {
+      d = (await r.json()) as { id?: string; error?: string };
+    } catch {
+      if (!r.ok) throw new Error("Risposta non valida dal server");
+    }
     if (!r.ok || !d.id) throw new Error(d.error ?? "Errore");
     pendingFiles.set(d.id, file);
     autoStart.add(d.id);
