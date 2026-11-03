@@ -14,10 +14,12 @@ function getPool() {
     if (!databaseUrl) {
       throw new Error("DATABASE_URL is required");
     }
+    const isSupabase = databaseUrl.includes("supabase.co");
     poolInstance =
       globalForDb.__arenaNextJsPostgresqlPool ??
       new Pool({
         connectionString: databaseUrl,
+        ssl: isSupabase ? { rejectUnauthorized: false } : undefined,
       });
     if (process.env.NODE_ENV !== "production") {
       globalForDb.__arenaNextJsPostgresqlPool = poolInstance;
