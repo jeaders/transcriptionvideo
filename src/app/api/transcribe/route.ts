@@ -34,6 +34,7 @@ export async function POST(req: Request) {
     after(() => processTranscript(id, { language: body.language, target: body.target, quality: body.quality }));
     return NextResponse.json({ id });
   } catch (err) {
+    console.error("[transcribe] insert error:", err);
     const message = err instanceof Error ? err.message : "Errore durante l'avvio della trascrizione";
     return NextResponse.json({ error: message }, { status: 500 });
   }
