@@ -1,6 +1,6 @@
 # Trascrivo — Multilingual Video Transcription Platform
 
-![Build Status](https://img.shields.io/github/v/release/jeaders/transcriptionvideo?style=flat-square&color=brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square) ![Platform](https://img.shields.io/badge/deployed%20on-Netlify-44cc11?style=flat-square&logo=netlify) ![Stars](https://img.shields.io/github/stars/jeaders/transcriptionvideo?style=flat-square&color=yellow)
+![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square) ![Platform](https://img.shields.io/badge/deployed%20on-Netlify-44cc11?style=flat-square&logo=netlify)
 
 **Trascrivo** è una piattaforma web per la trascrizione automatica di video in italiano e in inglese. Incolla il link di un video da YouTube, TikTok, Instagram, Facebook, X/Twitter, Twitch, Vimeo, Reddit, Dailymotion, LinkedIn o oltre 1000 siti supportati, oppure carica un file audio/video dal tuo computer, e ottieni in pochi secondi una trascrizione precisa con timestamp, traduzione ed export in formati professionali.
 
