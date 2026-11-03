@@ -95,18 +95,21 @@ export function parseAnyCaption(body: string): Segment[] {
   return parseVtt(t);
 }
 
+const round3 = (n: number) => Math.round(n * 1000) / 1000;
+
 /** Merge very short caption fragments into readable sentences */
 export function normalizeSegments(segs: Segment[]): Segment[] {
   const out: Segment[] = [];
-  for (const s of segs) {
-    const text = s.text.replace(/\s+/g, " ").trim();
+  for (const raw of segs) {
+    const text = raw.text.replace(/\s+/g, " ").trim();
     if (!text) continue;
+    const s = { start: round3(raw.start), end: round3(raw.end), text };
     const prev = out[out.length - 1];
     if (prev && prev.text.length < 60 && !/[.!?…]$/.test(prev.text) && s.start - prev.end < 1.5 && (prev.text + text).length < 160) {
       prev.text = `${prev.text} ${text}`;
-      prev.end = Math.max(prev.end, s.end);
+      prev.end = Math.round(Math.max(prev.end, s.end) * 1000) / 1000;
     } else {
-      out.push({ start: s.start, end: Math.max(s.end, s.start), text });
+      out.push({ ...s, start: round3(s.start), end: round3(Math.max(s.end, s.start)) });
     }
   }
   return out;

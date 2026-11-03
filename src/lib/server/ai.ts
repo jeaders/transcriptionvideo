@@ -42,14 +42,18 @@ export async function whisperApi(
   data: Blob,
   filename: string,
   language?: string,
+  opts?: { quality?: string; prompt?: string },
 ): Promise<{ segments: Segment[]; language?: string }> {
   const p = aiProvider();
   if (!p) throw new Error("Nessuna chiave API configurata");
   if (data.size > 25 * 1024 * 1024) throw new Error("File audio oltre 25MB: usa la modalità browser");
+  const model = opts?.quality === "precise" && p.name === "groq" ? "whisper-large-v3" : p.sttModel;
   const form = new FormData();
   form.append("file", data, filename);
-  form.append("model", p.sttModel);
+  form.append("model", model);
   form.append("response_format", "verbose_json");
+  form.append("temperature", "0");
+  if (opts?.prompt) form.append("prompt", opts.prompt.slice(0, 900));
   if (language && language !== "auto") form.append("language", language);
   const res = await fetch(`${p.base}/audio/transcriptions`, {
     method: "POST",
@@ -63,9 +67,13 @@ export async function whisperApi(
   return { segments, language: normalizeLang(d.language) };
 }
 
-export async function whisperFile(file: string, language?: string) {
+export async function whisperFile(
+  file: string,
+  language?: string,
+  opts?: { quality?: string; prompt?: string },
+) {
   const buf = fs.readFileSync(file);
-  return whisperApi(new Blob([buf], { type: mimeFor(file) }), path.basename(file), language);
+  return whisperApi(new Blob([buf], { type: mimeFor(file) }), path.basename(file), language, opts);
 }
 
 const NAME_TO_CODE: Record<string, string> = {

@@ -67,7 +67,7 @@ multilingual-video-transcription-platform/
 
 ## Avvio in sviluppo
 
-Prerequisiti: Node.js 18+, PostgreSQL.
+Prerequisiti: Node.js 18+. Il database PostgreSQL gira in user-space (embedded, nessuna installazione o password di sistema richiesta). Servono anche `ffmpeg` e, per l'estrazione dai video, `yt-dlp` (vedi "Strumenti esterni").
 
 ```bash
 # Installa le dipendenze
@@ -76,20 +76,38 @@ npm install
 # Configura le variabili d'ambiente
 cp .env.example .env.local
 
-# Avvia il database e le migrazioni
-npm run db:push
+# Inizializza, avvia il PostgreSQL embedded e applica lo schema
+npm run db:init && npm run db:push
 
 # Avvia in sviluppo
 npm run dev
 ```
 
+Comandi database utili:
+
+| Comando | Effetto |
+| --- | --- |
+| `npm run db:init` | Crea (se serve) e avvia il cluster PostgreSQL in `.pgdata` |
+| `npm run db:start` / `npm run db:stop` | Avvia o ferma il database |
+| `npm run db:push` | Applica lo schema Drizzle |
+
+## Strumenti esterni
+
+- `yt-dlp`: versioni pre-2026 falliscono su YouTube (per l'ultima verifica la mia versione potrebbe non bastare). Consigliato il binario standalone aggiornato:
+  ```bash
+  curl -sL -o ~/.local/bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux && chmod +x ~/.local/bin/yt-dlp
+  ```
+  Poi punta `YTDLP_PATH` a quel binario; in sua assenza l'app scarica automaticamente l'ultima release in una cartella temporanea.
+- `ffmpeg`: `sudo apt install ffmpeg` (usato da yt-dlp per l'estrazione audio).
+
 ## Variabili d'ambiente
 
 | Variabile | Descrizione |
 | --- | --- |
-| `DATABASE_URL` | Connessione PostgreSQL |
+| `DATABASE_URL` | Connessione PostgreSQL (default: istanza embedded) |
+| `YTDLP_PATH` | Percorso di un binario yt-dlp alternativo (consigliato se quello di sistema è vecchio) |
 | `OPENAI_API_KEY` | Chiave API OpenAI per Whisper |
-| `GROQ_API_KEY` | Chiave API Groq come alternativa a OpenAI |
+| `GROQ_API_KEY` | Chiave API Groq come alternativa a OpenAI (piano gratuito disponibile) |
 | `MYMEMORY_EMAIL` | Email per aumentare il limite MyMemory per la traduzione |
 
 ## Licenza

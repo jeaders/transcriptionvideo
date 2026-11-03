@@ -205,6 +205,12 @@ export default function Workspace({ initial }: { initial: PublicTranscript }) {
   }
 
   const words = wordCount(t.segments);
+  const coverage =
+    t.status === "done" && t.duration && t.segments.length
+      ? Math.round(
+          (t.segments.reduce((a, s) => a + Math.max(0, s.end - s.start), 0) / t.duration) * 100,
+        )
+      : null;
   const langTabs: { key: string; label: string }[] = [{ key: "orig", label: `Originale${src ? ` · ${langName(src)}` : ""}` }];
   if (src !== "it") langTabs.push({ key: "it", label: "🇮🇹 Italiano" });
   if (src !== "en") langTabs.push({ key: "en", label: "🇬🇧 English" });
@@ -272,6 +278,24 @@ export default function Workspace({ initial }: { initial: PublicTranscript }) {
                   <span>Metodo</span>
                   <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-300">{methodLabel[t.method ?? ""] ?? t.method}</span>
                 </div>
+                {coverage !== null && (
+                  <div className="mt-3 flex items-center justify-between text-xs text-zinc-500">
+                    <span>Audio con testo</span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 font-medium ${
+                        coverage >= 90 ? "bg-emerald-500/10 text-emerald-300" : "bg-amber-500/10 text-amber-300"
+                      }`}
+                      title="Percentuale della durata del video coperta dalla trascrizione"
+                    >
+                      ~{coverage}%
+                    </span>
+                  </div>
+                )}
+                {coverage !== null && coverage < 85 && (
+                  <p className="mt-3 text-[11px] leading-relaxed text-zinc-500">
+                    Le parti senza voce (musiche, intro o outro strumentali) non generano testo: non è un errore.
+                  </p>
+                )}
                 {keywords.length > 0 && (
                   <>
                     <p className="mt-4 text-xs text-zinc-500">Parole chiave</p>

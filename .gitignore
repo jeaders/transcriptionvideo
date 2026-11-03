@@ -1,6 +1,10 @@
 node_modules
 .next
+.pgdata
+tsconfig.tsbuildinfo
+# ignora i file .env ma non l'esempio
 .env*
+!.env.example
 .vercel
 dist
 build

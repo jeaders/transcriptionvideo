@@ -51,7 +51,7 @@ export default function TranscribeForm() {
     const r = await fetch("/api/transcribe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, language: prefs.language, target: prefs.target }),
+      body: JSON.stringify({ url, language: prefs.language, target: prefs.target, quality: prefs.quality }),
     });
     let d: { id?: string; error?: string } = {};
     try {
@@ -71,6 +71,7 @@ export default function TranscribeForm() {
       fd.append("file", file);
       fd.append("language", prefs.language);
       fd.append("target", prefs.target);
+      fd.append("quality", prefs.quality);
       const r = await fetch("/api/upload", { method: "POST", body: fd });
       let d: { id?: string; error?: string } = {};
       try {
@@ -250,14 +251,21 @@ export default function TranscribeForm() {
               </select>
             </label>
             <label className="text-xs text-zinc-400">
-              Modello AI {serverWhisper ? "(fallback browser)" : "(nel browser)"}
-              <select className={`${selectCls} mt-1.5`} value={prefs.model} onChange={(e) => upd({ model: e.target.value as WhisperModel })}>
-                {(Object.keys(MODELS) as WhisperModel[]).map((m) => (
-                  <option key={m} value={m} className="bg-zinc-900">
-                    Whisper {m} — {MODELS[m].label} ({MODELS[m].size})
-                  </option>
-                ))}
-              </select>
+              {serverWhisper ? "Qualità Whisper (server)" : "Qualità Whisper (browser)"}
+              {serverWhisper ? (
+                <select className={`${selectCls} mt-1.5`} value={prefs.quality} onChange={(e) => upd({ quality: e.target.value as "fast" | "precise" })}>
+                  <option value="fast" className="bg-zinc-900">Veloce — whisper-large-v3-turbo</option>
+                  <option value="precise" className="bg-zinc-900">Preciso — whisper-large-v3</option>
+                </select>
+              ) : (
+                <select className={`${selectCls} mt-1.5`} value={prefs.model} onChange={(e) => upd({ model: e.target.value as WhisperModel })}>
+                  {(Object.keys(MODELS) as WhisperModel[]).map((m) => (
+                    <option key={m} value={m} className="bg-zinc-900">
+                      Whisper {m} — {MODELS[m].label} ({MODELS[m].size})
+                    </option>
+                  ))}
+                </select>
+              )}
             </label>
             <label className="flex items-center gap-2 text-xs text-zinc-400 sm:col-span-3">
               <input type="checkbox" checked={prefs.gpu} onChange={(e) => upd({ gpu: e.target.checked })} className="accent-violet-500" />

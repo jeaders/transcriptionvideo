@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 800;
 
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as { url?: string; language?: string; target?: string };
+  const body = (await req.json().catch(() => ({}))) as { url?: string; language?: string; target?: string; quality?: string };
   let url = (body.url ?? "").trim();
   if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
   try {
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       status: "processing",
       meta: vid ? { videoId: vid } : {},
     });
-    after(() => processTranscript(id, { language: body.language, target: body.target }));
+    after(() => processTranscript(id, { language: body.language, target: body.target, quality: body.quality }));
     return NextResponse.json({ id });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Errore durante l'avvio della trascrizione";

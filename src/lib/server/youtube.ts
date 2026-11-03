@@ -10,7 +10,8 @@ export type YtMeta = {
   tracks: YtTrack[];
 };
 
-const CLIENT = { clientName: "ANDROID", clientVersion: "20.10.38", androidSdkVersion: 34, hl: "en", gl: "US" };
+const CLIENT = { clientName: "IOS", clientVersion: "20.10.4", deviceMake: "Apple", deviceModel: "iPhone16,2", osName: "iPhone", osVersion: "18.3.2.21D620", hl: "en", gl: "US" };
+const USER_AGENT = "com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_3_2 like Mac OS X;)";
 
 export async function youtubePlayer(videoId: string): Promise<YtMeta | null> {
   try {
@@ -18,7 +19,7 @@ export async function youtubePlayer(videoId: string): Promise<YtMeta | null> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": "com.google.android.youtube/20.10.38 (Linux; U; Android 14)",
+        "User-Agent": USER_AGENT,
       },
       body: JSON.stringify({ context: { client: CLIENT }, videoId }),
       cache: "no-store",

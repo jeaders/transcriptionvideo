@@ -2,9 +2,9 @@
 
 import type { WhisperModel } from "./whisper";
 
-export type Prefs = { language: string; target: string; model: WhisperModel; gpu: boolean };
+export type Prefs = { language: string; target: string; model: WhisperModel; gpu: boolean; quality: "fast" | "precise" };
 
-export const DEFAULT_PREFS: Prefs = { language: "auto", target: "it", model: "base", gpu: true };
+export const DEFAULT_PREFS: Prefs = { language: "auto", target: "it", model: "base", gpu: true, quality: "fast" };
 
 /** Files selected on the home page, kept in memory across client navigation */
 export const pendingFiles = new Map<string, File>();

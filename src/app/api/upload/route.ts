@@ -22,6 +22,7 @@ export async function POST(req: Request) {
   if (file.size > 25 * 1024 * 1024) return NextResponse.json({ error: "File oltre 25MB" }, { status: 413 });
   const language = String(form.get("language") ?? "auto");
   const target = String(form.get("target") ?? "none");
+  const quality = String(form.get("quality") ?? "");
   const duration = Number(form.get("duration") ?? 0);
   const id = newId();
   fs.mkdirSync(MEDIA_DIR, { recursive: true });
@@ -37,7 +38,10 @@ export async function POST(req: Request) {
     mediaPath: dest,
   });
   try {
-    const r = await whisperFile(dest, language);
+    const prompt = file.name
+      ? `Traccia audio "${file.name.replace(/\.[a-z0-9]+$/i, "")}". Trascrivi integralmente tutto l'audio parlato o cantato, con ortografia e nomi corretti.`
+      : undefined;
+    const r = await whisperFile(dest, language, { quality: quality || undefined, prompt });
     await db
       .update(transcripts)
       .set({ segments: normalizeSegments(r.segments), sourceLang: r.language ?? null, status: "done", method: "whisper-api" })
