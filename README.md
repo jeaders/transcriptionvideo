@@ -1,6 +1,10 @@
 # Trascrivo — Multilingual Video Transcription Platform
-![Build Status](https://img.shields.io/github/v/release/jeaders/transcriptionvideo?style=social&color=brightgreen)
-![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+
+![Trascrivo](https://img.shields.io/badge/Trascrivo-AI%20Transcription-1f2937?style=for-the-badge&logo=rocket)
+
+| Build | License | Platform |
+| :---: | :---: | :---: |
+| ![Build Status](https://img.shields.io/github/v/release/jeaders/transcriptionvideo?style=social&color=brightgreen) | ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg) | ![Netlify](https://img.shields.io/badge/deployed%20on-Netlify-44cc11?style=social&logo=netlify) |
 
 **Trascrivo** è una piattaforma web per la trascrizione automatica di video in italiano e in inglese. Incolla il link di un video da YouTube, TikTok, Instagram, Facebook, X/Twitter, Twitch, Vimeo, Reddit, Dailymotion, LinkedIn o oltre 1000 siti supportati, oppure carica un file audio/video dal tuo computer, e ottieni in pochi secondi una trascrizione precisa con timestamp, traduzione ed export in formati professionali.
 
@@ -24,8 +28,6 @@ Nessuna registrazione richiesta. La trascrizione nel browser mantiene l’audio 
 ![Transcribe form](screenshots/transcribe.png)
 
 ![API page](screenshots/api.png)
-
-## Ultime funzionalità aggiunte
 
 - **Gestione errori migliorata**: l'API di trascrizione ora gestisce errori in modo più robusto, restituendo messaggi di errore JSON chiari
 - **Script di database**: aggiunti comandi `db:init`, `db:start`, `db:stop` e `db:push` per gestire il database PostgreSQL embedded
@@ -130,3 +132,20 @@ Comandi database utili:
 ## Licenza
 
 MIT
+
+---
+
+**© 2026 Alex Mirici — Web Developer**
+
+---
+
+## Changelog
+
+### v1.0.0 — Prima release pubblica
+- Trascrizione AI con Whisper (Groq/OpenAI) e sottotitoli nativi
+- Supporto di oltre 1000 piattaforme video
+- Traduzione italiano/inglese con timestamp sincronizzati
+- Export in TXT, SRT, VTT, Word, JSON, PDF
+- Ricerca nel testo, cronologia e condivisione pubblica
+- Privacy by design: trascrizione nel browser
+- Database PostgreSQL embedded per sviluppo locale
