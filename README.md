@@ -1,4 +1,6 @@
 # Trascrivo — Multilingual Video Transcription Platform
+![Build Status](https://img.shields.io/github/v/release/jeaders/transcriptionvideo?style=social&color=brightgreen)
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 **Trascrivo** è una piattaforma web per la trascrizione automatica di video in italiano e in inglese. Incolla il link di un video da YouTube, TikTok, Instagram, Facebook, X/Twitter, Twitch, Vimeo, Reddit, Dailymotion, LinkedIn o oltre 1000 siti supportati, oppure carica un file audio/video dal tuo computer, e ottieni in pochi secondi una trascrizione precisa con timestamp, traduzione ed export in formati professionali.
 
@@ -14,6 +16,21 @@ Nessuna registrazione richiesta. La trascrizione nel browser mantiene l’audio 
 - Privacy by design: nel browser l’audio non lascia mai il tuo dispositivo.
 - Ricerca nel testo con evidenziazione e contatore dei risultati.
 - Cronologia e condivisione con link pubblico.
+
+## Screenshot
+
+![Home page](screenshots/home.png)
+
+![Transcribe form](screenshots/transcribe.png)
+
+![API page](screenshots/api.png)
+
+## Ultime funzionalità aggiunte
+
+- **Gestione errori migliorata**: l'API di trascrizione ora gestisce errori in modo più robusto, restituendo messaggi di errore JSON chiari
+- **Script di database**: aggiunti comandi `db:init`, `db:start`, `db:stop` e `db:push` per gestire il database PostgreSQL embedded
+- **Miglioramenti all'API**: l'API di trascrizione ora supporta parametri di qualità e gestisce meglio i tipi di dati
+- **Struttura progetto migliorata**: organizzazione più chiara dei file API e componenti
 
 ## Come funziona
 
