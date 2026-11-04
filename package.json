@@ -10,6 +10,7 @@
     "db:start": "node_modules/@embedded-postgres/linux-x64/native/bin/pg_ctl -D .pgdata -l .pgdata/postgres.log start",
     "db:stop": "node_modules/@embedded-postgres/linux-x64/native/bin/pg_ctl -D .pgdata stop",
     "db:init": "node scripts/db-init.mjs",
+    "migrate": "node scripts/migrate.mjs",
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
