@@ -14,12 +14,18 @@ function getPool() {
     if (!databaseUrl) {
       throw new Error("DATABASE_URL is required");
     }
-    const isSupabase = databaseUrl.includes("supabase.co");
+    // Postgres remote (Supabase pooler incluso: aws-0-*.pooler.supabase.com) richiede SSL;
+    // l'istanza locale embedded gira su 127.0.0.1 e non lo usa.
+    let host: string | null = null;
+    try {
+      host = new URL(databaseUrl).hostname;
+    } catch {}
+    const isLocal = !host || host === "localhost" || host === "127.0.0.1" || host === "::1";
     poolInstance =
       globalForDb.__arenaNextJsPostgresqlPool ??
       new Pool({
         connectionString: databaseUrl,
-        ssl: isSupabase ? { rejectUnauthorized: false } : undefined,
+        ssl: isLocal ? undefined : { rejectUnauthorized: false },
       });
     if (process.env.NODE_ENV !== "production") {
       globalForDb.__arenaNextJsPostgresqlPool = poolInstance;

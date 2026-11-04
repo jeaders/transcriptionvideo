@@ -35,7 +35,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ id });
   } catch (err) {
     console.error("[transcribe] insert error:", err);
-    const message = err instanceof Error ? err.message : "Errore durante l'avvio della trascrizione";
+    const cause = err instanceof Error && (err as { cause?: unknown }).cause instanceof Error ? (err as { cause: Error }).cause.message : null;
+    const message = err instanceof Error ? [err.message, cause && cause !== err.message ? `causa: ${cause}` : null].filter(Boolean).join(" — ") : "Errore durante l'avvio della trascrizione";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
