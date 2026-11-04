@@ -5,5 +5,9 @@ export const dynamic = "force-dynamic";
 
 export function GET() {
   const p = aiProvider();
-  return NextResponse.json({ serverWhisper: Boolean(p), provider: p?.name ?? null });
+  let dbHost: string | null = null;
+  try {
+    dbHost = process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).hostname : null;
+  } catch {}
+  return NextResponse.json({ serverWhisper: Boolean(p), provider: p?.name ?? null, dbHost });
 }
