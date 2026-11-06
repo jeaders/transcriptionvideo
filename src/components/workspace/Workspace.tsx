@@ -66,7 +66,7 @@ export default function Workspace({ initial }: { initial: PublicTranscript }) {
     const f = pendingFiles.get(t.id);
     if (f) {
       const u = URL.createObjectURL(f);
-      setLocalSrc(u);
+      setLocalSrc(u); // eslint-disable-line react-hooks/set-state-in-effect
       return () => URL.revokeObjectURL(u);
     }
   }, [t.id]);
@@ -87,13 +87,13 @@ export default function Workspace({ initial }: { initial: PublicTranscript }) {
     if (autoSelected.current || t.status !== "done") return;
     const keys = Object.keys(t.translations ?? {});
     if (keys.length) {
-      setView(keys[0]);
+      setView(keys[0]); // eslint-disable-line react-hooks/set-state-in-effect
     }
     autoSelected.current = true;
   }, [t.status, t.translations]);
 
   const src = t.sourceLang?.split("-")[0];
-  const segs: Segment[] = view === "orig" ? t.segments : (t.translations?.[view] ?? []);
+  const segs = useMemo<Segment[]>(() => (view === "orig" ? t.segments : (t.translations?.[view] ?? [])), [view, t.segments, t.translations]);
   const active = useMemo(() => {
     let idx = -1;
     for (let i = 0; i < segs.length; i++) {

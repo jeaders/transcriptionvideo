@@ -15,7 +15,7 @@ export default function BrowserTranscriber({
   onDone: (t: PublicTranscript) => void;
   onLocalFile: (f: File) => void;
 }) {
-  const [prefs, setPrefs] = useState<Prefs | null>(null);
+  const [prefs, setPrefs] = useState<Prefs | null>(() => loadPrefs());
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState<Progress | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -23,9 +23,8 @@ export default function BrowserTranscriber({
   const started = useRef(false);
 
   useEffect(() => {
-    setPrefs(loadPrefs());
     const f = pendingFiles.get(t.id);
-    if (f) setFile(f);
+    if (f) setFile(f); // eslint-disable-line react-hooks/set-state-in-effect
   }, [t.id]);
 
   const start = useCallback(
@@ -71,7 +70,7 @@ export default function BrowserTranscriber({
     if (autoStart.has(t.id) && (t.platform !== "upload" || file)) {
       started.current = true;
       autoStart.delete(t.id);
-      start();
+      start(); // eslint-disable-line react-hooks/set-state-in-effect
     }
   }, [prefs, t.id, t.platform, file, start]);
 

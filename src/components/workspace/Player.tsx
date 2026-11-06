@@ -50,7 +50,7 @@ export default function Player(p: PlayerProps) {
   const { onTime, seekRef } = p;
 
   useEffect(() => {
-    if (p.localSrc) setLoadMedia(true);
+    if (p.localSrc) setLoadMedia(true); // eslint-disable-line react-hooks/set-state-in-effect
   }, [p.localSrc]);
 
   // YouTube

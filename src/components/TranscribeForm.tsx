@@ -25,13 +25,12 @@ export default function TranscribeForm() {
   const [drag, setDrag] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
+  const [prefs, setPrefs] = useState<Prefs>(() => loadPrefs());
   const [serverWhisper, setServerWhisper] = useState(false);
   const [showOpts, setShowOpts] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setPrefs(loadPrefs());
     fetch("/api/config")
       .then((r) => r.json())
       .then((d: { serverWhisper: boolean }) => setServerWhisper(d.serverWhisper))
