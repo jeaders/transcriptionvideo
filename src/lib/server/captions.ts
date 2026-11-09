@@ -26,7 +26,22 @@ export function parseTimedText(xml: string): Segment[] {
     const start = Number(m[1]) / 1000;
     out.push({ start, end: start + Number(m[2] ?? 0) / 1000, text });
   }
-  if (out.length) return out;
+  // de-duplicate rolling captions (auto captions repeat/extend previous text)
+  if (out.length) {
+    const dedup: Segment[] = [];
+    for (const s of out) {
+      const prev = dedup[dedup.length - 1];
+      if (prev && s.start < prev.end && (prev.text === s.text || s.text.startsWith(prev.text))) {
+        prev.text = s.text;
+        prev.end = Math.max(prev.end, s.end);
+      } else if (prev && s.start < prev.end && prev.text.endsWith(s.text)) {
+        prev.end = Math.max(prev.end, s.end);
+      } else {
+        dedup.push({ ...s });
+      }
+    }
+    return dedup.length ? dedup : out;
+  }
   const p1 = /<text\s+start="([\d.]+)"(?:\s+dur="([\d.]+)")?[^>]*>([\s\S]*?)<\/text>/g;
   while ((m = p1.exec(xml))) {
     const text = clean(m[3]);

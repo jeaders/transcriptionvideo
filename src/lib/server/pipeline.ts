@@ -128,7 +128,9 @@ export async function processTranscript(id: string, opts: { language?: string; t
     if (opts.target && opts.target !== "none" && opts.target !== sourceLang) {
       try {
         await ensureTranslation(id, opts.target);
-      } catch {}
+      } catch (e) {
+        console.error("[processTranscript] ensureTranslation fallita:", e instanceof Error ? e.message : e);
+      }
     }
   } catch (e) {
     await update(id, { status: "error", error: e instanceof Error ? e.message : String(e) });
@@ -158,7 +160,19 @@ export async function ensureTranslation(id: string, target: string): Promise<Seg
     if (result.length) result = normalizeSegments(result);
   }
 
-  if (!result.length) result = await translateSegments(t.segments, target, t.sourceLang);
+  if (!result.length) {
+    let lastErr: unknown = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        result = await translateSegments(t.segments, target, t.sourceLang);
+        break;
+      } catch (e) {
+        lastErr = e;
+        console.error(`[ensureTranslation] tentativo ${attempt + 1} fallito:`, e instanceof Error ? e.message : e);
+      }
+    }
+    if (!result.length && lastErr) throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
+  }
   const [fresh] = await db.select({ translations: transcripts.translations }).from(transcripts).where(eq(transcripts.id, id));
   await update(id, { translations: { ...(fresh?.translations ?? {}), [target]: result } });
   return result;
