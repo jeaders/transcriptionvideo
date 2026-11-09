@@ -152,9 +152,14 @@ export async function ensureTranslation(id: string, target: string): Promise<Seg
       if (native) result = await fetchTrack(native.baseUrl);
       if (!result.length) {
         const base = pickTrack(tracks, t.sourceLang ?? undefined);
-        if (base) result = await fetchTrack(base.baseUrl, target);
+        if (base) {
+          for (let attempt = 0; attempt < 2 && !result.length; attempt++) {
+            result = await fetchTrack(base.baseUrl, target);
+          }
+        }
       }
-    } catch {
+    } catch (e) {
+      console.error("[ensureTranslation] fetchTrack fallito:", e instanceof Error ? e.message : e);
       result = [];
     }
     if (result.length) result = normalizeSegments(result);
