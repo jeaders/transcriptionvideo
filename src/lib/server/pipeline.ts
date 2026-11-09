@@ -133,7 +133,9 @@ export async function processTranscript(id: string, opts: { language?: string; t
           await ensureTranslation(id, opts.target);
           break;
         } catch (e) {
-          console.error(`[processTranscript] ensureTranslation tentativo ${attempt + 1} fallito:`, e instanceof Error ? e.message : e);
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error(`[processTranscript] ensureTranslation tentativo ${attempt + 1} fallito:`, msg);
+          try { require("node:fs").appendFileSync("/tmp/opencode/server-errors.log", new Date().toISOString() + " ensureTranslation: " + msg + "\\n"); } catch {}
           if (attempt === 0) await new Promise((r) => setTimeout(r, 2000));
         }
       }
@@ -144,13 +146,13 @@ export async function processTranscript(id: string, opts: { language?: string; t
 }
 
 export async function ensureTranslation(id: string, target: string): Promise<Segment[]> {
+  const log = (m: string) => { try { require("node:fs").appendFileSync("/tmp/opencode/server-errors.log", new Date().toISOString() + " " + m + "\n"); } catch {} };
   const [t] = await db.select().from(transcripts).where(eq(transcripts.id, id));
   if (!t) throw new Error("Trascrizione non trovata");
   if (t.translations?.[target]?.length) return t.translations[target];
   if (!t.segments.length) throw new Error("Nessun testo da tradurre");
   let result: Segment[] = [];
 
-  // YouTube: native track in target language or YouTube auto-translation
   const tracks = (t.meta?.ytTracks as YtTrack[] | undefined) ?? [];
   if (tracks.length) {
     const native = tracks.find((tr) => tr.kind !== "asr" && tr.lang.split("-")[0] === target);
@@ -160,16 +162,18 @@ export async function ensureTranslation(id: string, target: string): Promise<Seg
         const base = pickTrack(tracks, t.sourceLang ?? undefined);
         if (base) {
           for (let attempt = 0; attempt < 2 && !result.length; attempt++) {
+            if (attempt > 0) await new Promise((r) => setTimeout(r, 2000));
             result = await fetchTrack(base.baseUrl, target);
           }
         }
       }
     } catch (e) {
-      console.error("[ensureTranslation] fetchTrack fallito:", e instanceof Error ? e.message : e);
+      log("ensureTranslation fetchTrack fallito: " + (e instanceof Error ? e.message : String(e)));
       result = [];
     }
     if (result.length) result = normalizeSegments(result);
   }
+  log("ensureTranslation dopo YouTube path: result.length=" + result.length);
 
   if (!result.length) {
     let lastErr: unknown = null;
@@ -179,12 +183,15 @@ export async function ensureTranslation(id: string, target: string): Promise<Seg
         break;
       } catch (e) {
         lastErr = e;
-        console.error(`[ensureTranslation] tentativo ${attempt + 1} fallito:`, e instanceof Error ? e.message : e);
+        log("ensureTranslation translateSegments tentativo " + (attempt + 1) + " fallito: " + (e instanceof Error ? e.message : String(e)));
+        if (attempt === 0) await new Promise((r) => setTimeout(r, 2000));
       }
     }
     if (!result.length && lastErr) throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
   }
+  log("ensureTranslation result.length=" + result.length + " prima del save");
   const [fresh] = await db.select({ translations: transcripts.translations }).from(transcripts).where(eq(transcripts.id, id));
   await update(id, { translations: { ...(fresh?.translations ?? {}), [target]: result } });
+  log("ensureTranslation salvato ok");
   return result;
 }
