@@ -126,10 +126,16 @@ export async function processTranscript(id: string, opts: { language?: string; t
     await update(id, { segments, sourceLang: sourceLang ?? null, method, status: "done", error: null });
 
     if (opts.target && opts.target !== "none" && opts.target !== sourceLang) {
-      try {
-        await ensureTranslation(id, opts.target);
-      } catch (e) {
-        console.error("[processTranscript] ensureTranslation fallita:", e instanceof Error ? e.message : e);
+      // piccolo ritardo per evitare rate-limit di YouTube (429) tra estrazione e traduzione
+      await new Promise((r) => setTimeout(r, 1500));
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          await ensureTranslation(id, opts.target);
+          break;
+        } catch (e) {
+          console.error(`[processTranscript] ensureTranslation tentativo ${attempt + 1} fallito:`, e instanceof Error ? e.message : e);
+          if (attempt === 0) await new Promise((r) => setTimeout(r, 2000));
+        }
       }
     }
   } catch (e) {
