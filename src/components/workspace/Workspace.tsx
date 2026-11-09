@@ -71,15 +71,28 @@ export default function Workspace({ initial }: { initial: PublicTranscript }) {
     }
   }, [t.id]);
 
-  // polling while server works
+  // polling while server works (and a bit after "done" to pick up auto-translation)
   useEffect(() => {
-    if (!["processing", "transcribing"].includes(t.status)) return;
+    if (!["processing", "transcribing", "done"].includes(t.status)) return;
+    if (t.status === "done" && Object.keys(t.translations ?? {}).length > 0) return;
     const iv = setInterval(async () => {
       const r = await fetch(`/api/transcripts/${t.id}`, { cache: "no-store" });
-      if (r.ok) setT((await r.json()) as PublicTranscript);
+      if (r.ok) {
+        const nt = (await r.json()) as PublicTranscript;
+        setT(nt);
+        if (nt.status === "done" && Object.keys(nt.translations ?? {}).length > 0) {
+          // traduzione arrivata: fermo il polling
+          clearInterval(iv);
+        }
+      }
     }, 1500);
-    return () => clearInterval(iv);
-  }, [t.status, t.id]);
+    // safety: ferma dopo 15s anche se nulla arriva
+    const timeout = setTimeout(() => clearInterval(iv), 15000);
+    return () => {
+      clearInterval(iv);
+      clearTimeout(timeout);
+    };
+  }, [t.status, t.id, t.translations]);
 
   // default view: show the auto translation if it exists
   const autoSelected = useRef(false);
