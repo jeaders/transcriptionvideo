@@ -108,12 +108,9 @@ export async function processTranscript(id: string, opts: { language?: string; t
     // 3) Server-side Whisper
     if (!segments.length && aiProvider()) {
       await update(id, { status: "transcribing" });
-      const [fresh] = await db.select({ title: transcripts.title, author: transcripts.author }).from(transcripts).where(eq(transcripts.id, id));
-      const ctx = [fresh?.author, fresh?.title].filter(Boolean).join(" · ");
-      const prompt = ctx ? `${fresh!.title}${fresh!.author ? ` — ${fresh!.author}` : ""}` : undefined;
       const file = await downloadAudio(url, id, 24);
       await update(id, { mediaPath: file });
-      const r = await whisperFile(file, hint, { quality: opts.quality, prompt });
+      const r = await whisperFile(file, hint, { quality: opts.quality });
       segments = r.segments;
       sourceLang = r.language ?? sourceLang;
       method = "whisper-api";

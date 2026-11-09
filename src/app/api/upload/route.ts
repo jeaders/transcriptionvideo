@@ -38,10 +38,7 @@ export async function POST(req: Request) {
     mediaPath: dest,
   });
   try {
-    const prompt = file.name
-      ? file.name.replace(/\.[a-z0-9]+$/i, "")
-      : undefined;
-    const r = await whisperFile(dest, language, { quality: quality || undefined, prompt });
+    const r = await whisperFile(dest, language, { quality: quality || undefined });
     await db
       .update(transcripts)
       .set({ segments: normalizeSegments(r.segments), sourceLang: r.language ?? null, status: "done", method: "whisper-api" })
