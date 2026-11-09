@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   });
   try {
     const prompt = file.name
-      ? `Traccia audio "${file.name.replace(/\.[a-z0-9]+$/i, "")}". Trascrivi integralmente tutto l'audio parlato o cantato, con ortografia e nomi corretti.`
+      ? file.name.replace(/\.[a-z0-9]+$/i, "")
       : undefined;
     const r = await whisperFile(dest, language, { quality: quality || undefined, prompt });
     await db

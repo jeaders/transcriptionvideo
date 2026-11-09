@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Segment } from "@/lib/format";
+import { prepareAudio } from "./audio";
 
 type Provider = { name: "groq" | "openai"; base: string; key: string; sttModel: string; chatModel: string };
 
@@ -71,9 +72,37 @@ export async function whisperFile(
   file: string,
   language?: string,
   opts?: { quality?: string; prompt?: string },
-) {
-  const buf = fs.readFileSync(file);
-  return whisperApi(new Blob([buf], { type: mimeFor(file) }), path.basename(file), language, opts);
+): Promise<{ segments: Segment[]; language?: string }> {
+  // Solo i file oltre 24 MB vengono normalizzati/spezzati; altrimenti si usa l'audio originale
+  // (la conversione 16k mp3 peggiora la qualità su musica e provoca allucinazioni).
+  const chunks =
+    fs.statSync(file).size > 24 * 1024 * 1024
+      ? await prepareAudio(file)
+      : [{ file, offset: 0 }];
+
+  const all: Segment[] = [];
+  let lang: string | undefined;
+  const cleanup: string[] = [];
+  try {
+    for (const c of chunks) {
+      const buf = fs.readFileSync(c.file);
+      const r = await whisperApi(new Blob([buf], { type: mimeFor(c.file) }), path.basename(c.file), language, opts);
+      for (const s of r.segments) all.push({ start: s.start + c.offset, end: s.end + c.offset, text: s.text });
+      if (!lang) lang = r.language;
+      if (c.file !== file) cleanup.push(c.file);
+    }
+  } finally {
+    for (const f of cleanup) {
+      try {
+        fs.unlinkSync(f);
+      } catch {}
+    }
+    try {
+      const chunksDir = path.join(path.dirname(file), `${path.basename(file, path.extname(file))}_chunks`);
+      if (fs.existsSync(chunksDir)) fs.rmSync(chunksDir, { recursive: true, force: true });
+    } catch {}
+  }
+  return { segments: all, language: lang };
 }
 
 const NAME_TO_CODE: Record<string, string> = {
@@ -133,6 +162,7 @@ async function llmTranslate(group: Segment[], target: string): Promise<Segment[]
   const d = (await res.json()) as { choices: { message: { content: string } }[] };
   const parsed = JSON.parse(d.choices[0].message.content) as { lines?: string[] };
   const lines = parsed.lines ?? [];
+  if (lines.length !== group.length) throw new Error(`LLM ha restituito ${lines.length} righe invece di ${group.length}`);
   return mapBack(group, lines, lines.join(" "));
 }
 
@@ -190,6 +220,17 @@ export async function translateSegments(segs: Segment[], target: string, source?
     } catch (e) {
       lastErr = e;
     }
+  }
+  // Fallback per-segmento: garantisce copertura completa anche se i batch falliscono il conteggio
+  try {
+    const out: Segment[] = [];
+    for (const s of segs) {
+      const r = await googleTranslate([s], target);
+      out.push(...r);
+    }
+    return out;
+  } catch (e) {
+    lastErr = e;
   }
   throw new Error(`Traduzione non riuscita: ${lastErr instanceof Error ? lastErr.message : "errore"}`);
 }
