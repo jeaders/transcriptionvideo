@@ -207,9 +207,20 @@ export default function Workspace({ initial }: { initial: PublicTranscript }) {
   const words = wordCount(t.segments);
   const coverage =
     t.status === "done" && t.duration && t.segments.length
-      ? Math.round(
-          (t.segments.reduce((a, s) => a + Math.max(0, s.end - s.start), 0) / t.duration) * 100,
-        )
+      ? (() => {
+          const iv = t.segments
+            .map((s) => [Math.max(0, s.start), Math.min(t.duration!, s.end)] as [number, number])
+            .filter(([a, b]) => b > a)
+            .sort((x, y) => x[0] - y[0]);
+          let covered = 0;
+          let curEnd = 0;
+          for (const [a, b] of iv) {
+            if (a > curEnd) covered += b - a;
+            else if (b > curEnd) covered += b - curEnd;
+            curEnd = Math.max(curEnd, b);
+          }
+          return Math.round((covered / t.duration!) * 100);
+        })()
       : null;
   const langTabs: { key: string; label: string }[] = [{ key: "orig", label: `Originale${src ? ` · ${langName(src)}` : ""}` }];
   if (src !== "it") langTabs.push({ key: "it", label: "🇮🇹 Italiano" });
